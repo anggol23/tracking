@@ -61,7 +61,7 @@ export default function CameraMonitor() {
         setWebcamActive(true);
       } catch (err) {
         console.error('Error starting webcam:', err);
-        alert('Webcam permission denied or not found. Falling back to simulated feed.');
+        console.warn('Webcam permission denied or not found. Falling back to simulated feed.');
       }
     }
   };

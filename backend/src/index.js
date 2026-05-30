@@ -17,8 +17,12 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: '*', // In development, allow all origins
+    origin: [
+      'https://tracking-one-ochre.vercel.app',
+      'http://localhost:5173'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
   },
 });
 
@@ -47,9 +51,9 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // returns distance in meters
 }
@@ -174,7 +178,7 @@ io.on('connection', (socket) => {
       await run('UPDATE devices SET status = "online" WHERE id = ?', [device.id]);
 
       socket.emit('device:auth_success', { deviceId: device.id, name: device.name });
-      
+
       // Notify dashboards
       io.to('dashboards').emit('device:status_change', {
         id: device.id,
@@ -260,7 +264,7 @@ io.on('connection', (socket) => {
           try {
             await run('UPDATE devices SET status = "offline" WHERE id = ?', [devId]);
             const timestamp = new Date().toISOString();
-            
+
             // Create disconnection alert
             const alertMessage = `Device "${devName}" went offline unexpectedly.`;
             const result = await run(
