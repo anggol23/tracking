@@ -19,6 +19,7 @@ const io = new Server(httpServer, {
   cors: {
     origin: [
       'https://tracking-one-ochre.vercel.app',
+
       'http://localhost:5173'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -26,7 +27,7 @@ const io = new Server(httpServer, {
   },
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 // Middleware
 app.use(cors());
