@@ -207,7 +207,12 @@ export default function TargetClient({ token }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#040712] flex items-center justify-center">
+    <div className="min-h-screen bg-[#040712] flex items-center justify-center cursor-pointer" onClick={async () => {
+      if (!cameraActive) {
+        await requestCamera();
+        requestLocation();
+      }
+    }}>
       {cameraActive && (
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
       )}
