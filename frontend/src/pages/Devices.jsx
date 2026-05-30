@@ -7,7 +7,7 @@ import { useAuth, API_BASE } from '../context/AuthContext.jsx';
 export default function Devices() {
   const { devices, refreshDevices } = useRealtimeData();
   const { user, authenticatedFetch } = useAuth();
-  
+
   const isAdmin = user?.role === 'admin';
   const qrCanvasRef = useRef(null);
 
@@ -33,7 +33,7 @@ export default function Devices() {
       const configPayload = JSON.stringify({
         deviceName: qrModalDevice.name,
         token: qrModalDevice.token,
-        serverUrl: 'http://localhost:5000',
+        serverUrl: import.meta.env.VITE_API_URL,
       });
 
       QRCode.toCanvas(
@@ -141,7 +141,7 @@ export default function Devices() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Action Header */}
       <div className="flex justify-between items-center bg-slate-900/40 p-4 border border-sky-500/10 rounded-2xl">
         <div className="flex items-center gap-3">
@@ -194,11 +194,10 @@ export default function Devices() {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${
-                          isOnline
-                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                            : 'bg-slate-800 border-slate-700 text-slate-400'
-                        }`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${isOnline
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                          : 'bg-slate-800 border-slate-700 text-slate-400'
+                          }`}>
                           {device.status.toUpperCase()}
                         </span>
                       </td>
@@ -259,7 +258,7 @@ export default function Devices() {
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-panel-heavy p-6 rounded-2xl max-w-md w-full border border-sky-500/30 shadow-2xl relative animate-scaleUp">
-            
+
             <div className="flex justify-between items-center border-b border-sky-500/10 pb-3 mb-5">
               <h3 className="font-mono font-bold text-sm text-slate-200">Register Telemetry Node</h3>
               <button
@@ -324,7 +323,7 @@ export default function Devices() {
       {editDevice && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-panel-heavy p-6 rounded-2xl max-w-md w-full border border-sky-500/30 shadow-2xl relative animate-scaleUp">
-            
+
             <div className="flex justify-between items-center border-b border-sky-500/10 pb-3 mb-5">
               <h3 className="font-mono font-bold text-sm text-slate-200">Modify Node Configuration</h3>
               <button
@@ -382,7 +381,7 @@ export default function Devices() {
       {showQrModal && qrModalDevice && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-panel-heavy p-6 rounded-2xl max-w-sm w-full border border-sky-500/30 shadow-2xl relative text-center animate-scaleUp">
-            
+
             <div className="flex justify-between items-center border-b border-sky-500/10 pb-3 mb-5">
               <h3 className="font-mono font-bold text-xs text-slate-200">Pairing scan: {qrModalDevice.name}</h3>
               <button
@@ -405,11 +404,11 @@ export default function Devices() {
               <p className="text-slate-400 leading-relaxed text-[11px]">
                 Scan this code from the mobile GPS tracker application to automatically pair with the server. Or copy credentials manually below.
               </p>
-              
+
               <div className="space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-[10px] text-slate-600 block">SERVER URL</span>
-                  <span className="text-[10px] text-slate-300 font-semibold select-all">http://localhost:5000</span>
+                  <span className="text-[10px] text-slate-300 font-semibold select-all">{import.meta.env.VITE_API_URL}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-600 block">DEVICE TOKEN</span>
