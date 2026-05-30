@@ -8,7 +8,6 @@ export default function CameraMonitor() {
   const [activeFeeds, setActiveFeeds] = useState([
     { id: 0, name: 'TARGET SCREEN (Mirrored)', deviceId: null, status: 'online' },
   ]);
-
   const [webcamActive, setWebcamActive] = useState(false);
   const [recordingFeedId, setRecordingFeedId] = useState(null);
 
@@ -18,17 +17,18 @@ export default function CameraMonitor() {
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
 
-  // Bind feeds to devices and join WebRTC rooms
+  // Map first device as target screen when devices are loaded
   useEffect(() => {
-    setActiveFeeds((prev) =>
-      prev.map((feed, idx) => {
-        const dev = devices[idx];
-        return { ...feed, deviceId: dev ? dev.id : null, deviceName: dev ? dev.name : null };
-      })
-    );
+    if (devices.length === 0) return;
+    const firstDevice = devices[0];
+    setActiveFeeds(prev => prev.map(feed => ({
+      ...feed,
+      deviceId: firstDevice.id,
+      status: firstDevice.status,
+    })));
   }, [devices]);
 
-  // Join signaling rooms for each device
+  // Join signaling rooms for each feed when deviceId is known
   useEffect(() => {
     if (!socket) return;
     activeFeeds.forEach((feed) => {
@@ -71,6 +71,20 @@ export default function CameraMonitor() {
     socket.on('webrtc:signal', handleSignal);
     return () => socket.off('webrtc:signal', handleSignal);
   }, [socket]);
+
+  // Assign deviceId to target feed when a remote stream appears (if not set yet)
+  useEffect(() => {
+    // If feed already has a deviceId, nothing to do
+    if (activeFeeds[0].deviceId !== null) return;
+    const streamIds = Object.keys(remoteStreams);
+    if (streamIds.length > 0) {
+      const firstId = parseInt(streamIds[0], 10);
+      console.log('Assigning deviceId for target screen:', firstId);
+      setActiveFeeds((prev) =>
+        prev.map((feed) => ({ ...feed, deviceId: firstId, status: 'online' }))
+      );
+    }
+  }, [remoteStreams]);
 
   // Cleanup peer connections on component unmount
   useEffect(() => {
@@ -117,7 +131,7 @@ export default function CameraMonitor() {
         ctx.fillRect(0, 0, 384, 216);
         ctx.fillStyle = '#38bdf8';
         ctx.fillText(`ID: ${feed.name}`, 15, 25);
-        ctx.fillText(`STATUS: OFFLINE / SIMULATED`, 15, 40);
+        ctx.fillText(`STATUS: ${feed.status.toUpperCase()}`, 15, 40);
         requestAnimationFrame(render);
       };
       render();
@@ -165,11 +179,11 @@ export default function CameraMonitor() {
 
       {displayedFeeds.map(feed => (
         <div key={feed.id} className="relative rounded-xl overflow-hidden bg-slate-900/30">
-          {remoteStreams[feed.deviceId] ? (
-            <VideoStream stream={remoteStreams[feed.deviceId]} />
-          ) : (
-            <CanvasStream feed={feed} />
-          )}
+            {(remoteStreams[feed.deviceId] || remoteStreams[Object.keys(remoteStreams)[0]]) ? (
+              <VideoStream stream={remoteStreams[feed.deviceId] || remoteStreams[Object.keys(remoteStreams)[0]]} />
+            ) : (
+              <CanvasStream feed={feed} />
+            )}
           {/* Simulated Webcam Overlay HUD on CAM-01 */}
           {webcamActive && (
             <div className="absolute inset-0 p-4 flex flex-col justify-between font-mono text-[10px] text-sky-400 pointer-events-none bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/40">
