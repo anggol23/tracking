@@ -6,15 +6,7 @@ export default function CameraMonitor() {
   const { devices, socket } = useRealtimeData();
   const [gridLayout, setGridLayout] = useState(2); // 1 = 1x1, 2 = 2x2, 3 = 3x3
   const [activeFeeds, setActiveFeeds] = useState([
-    { id: 1, name: 'CAM-01 (Gate Alpha)', deviceId: null, status: 'online' },
-    { id: 2, name: 'CAM-02 (Loading Dock)', deviceId: null, status: 'online' },
-    { id: 3, name: 'CAM-03 (Server Room)', deviceId: null, status: 'online' },
-    { id: 4, name: 'CAM-04 (Perimeter West)', deviceId: null, status: 'online' },
-    { id: 5, name: 'CAM-05 (Main Office)', deviceId: null, status: 'online' },
-    { id: 6, name: 'CAM-06 (Gate Beta)', deviceId: null, status: 'online' },
-    { id: 7, name: 'CAM-07 (Warehouse Inner)', deviceId: null, status: 'online' },
-    { id: 8, name: 'CAM-08 (Fuel Station)', deviceId: null, status: 'online' },
-    { id: 9, name: 'CAM-09 (HQ Parking)', deviceId: null, status: 'online' },
+    { id: 0, name: 'TARGET SCREEN (Mirrored)', deviceId: null, status: 'online' },
   ]);
 
   const [webcamActive, setWebcamActive] = useState(false);
@@ -178,12 +170,12 @@ export default function CameraMonitor() {
           ) : (
             <CanvasStream feed={feed} />
           )}
-          {/* Simulated Webcam Overlay HUD on CAM-1 */}
+          {/* Simulated Webcam Overlay HUD on CAM-01 */}
           {webcamActive && (
             <div className="absolute inset-0 p-4 flex flex-col justify-between font-mono text-[10px] text-sky-400 pointer-events-none bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/40">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                  <span className="font-bold">ID: CAM-01 (LIVE WEBCAM)</span>
+                  <span className="font-bold">ID: {feed.name} (LIVE WEBCAM)</span>
                   <span className="block text-slate-300">WEBRTC SIGNAL STABLE</span>
                 </div>
                 <div className="flex items-center gap-1">
