@@ -4,7 +4,7 @@ import { useAuth, API_BASE } from './AuthContext.jsx';
 
 const RealtimeDataContext = createContext();
 
-const SOCKET_SERVER = 'http://localhost:5000';
+const SOCKET_SERVER = import.meta.env.VITE_API_URL;
 
 export const RealtimeDataProvider = ({ children }) => {
   const { token, authenticatedFetch } = useAuth();

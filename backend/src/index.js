@@ -30,7 +30,13 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://tracking-one-ochre.vercel.app',
+    'http://localhost:5173'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // API HTTP Routes
